@@ -4,7 +4,9 @@
 #
 
 # GENERATE PRIME NUMBERS UP TO 10^5
-primes = [x for x in range(2, 10000) if all(x % y != 0 for y in range(3, x))]
+primes = [open("primebase.txt", "w")]
+
+print(primes)
 
 
 def prime_fact(n):
