@@ -4,7 +4,7 @@
 #
 
 # GENERATE PRIME NUMBERS UP TO 10^5
-primes = [open("primebase.txt", "w")]
+primes = [open("D:/primebase.txt", "w")]
 
 print(primes)
 
