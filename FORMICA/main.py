@@ -1,204 +1,136 @@
-import pyglet as pyg
-import pyglet.shapes
-from pyglet.gl import *
+import pyglet
+from pyglet import shapes
+from pyglet.text import Label
+import numpy as np
 from pyglet.window import key
 import random
-import numpy as np
 import ctypes
-from pyglet.window.key import MOD_SHIFT
-# config
+import config_window
 from constants import *
 
-
-# pyglet
-GAME = pyg.window.Window(
-    W, H,
-    caption = "game"
-)
-
-# scroll lock toggling
-user32 = ctypes.WinDLL('user32')
-
-# cursor
-GAME_CURSOR = GAME.get_system_mouse_cursor(GAME.CURSOR_CROSSHAIR)
-GAME.set_mouse_cursor(GAME_CURSOR)
-# graphics and openGL ?
-glEnable(GL_BLEND)
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-TILE_BATCH = pyg.graphics.Batch()
-
-
-# general functions
-def shuffle_color():
-    return list(COLORS.values())[random.randrange(0, len(COLORS), 1)]
-
-
-# tilemap class and methods
-class TileMap:
-
-    ### for each column, on each row, create a rectangle, assign to np array
-    def __init__(self, columns = COLS, rows = ROWS):
-        self.generation = int()
-        self.total_tiles = int(COLS * ROWS)
-        self.total_area = self.total_tiles * TILE_SIZE
-
-        self.current = np.zeros((COLS, ROWS), dtype = pyglet.shapes.Rectangle)
-        self.next = np.zeros((COLS, ROWS), dtype = pyglet.shapes.Rectangle)
-
-        for r in range(0, ROWS, 1):
-
-            for c in range(0, COLS, 1):
-                t = pyglet.shapes.Rectangle(
-                    r * TILE_SIZE, c * TILE_SIZE,
-                    TILE_SIZE, TILE_SIZE,
-                    batch = TILE_BATCH
-                )
-                t.color = shuffle_color()
-
-                self.current[r, c] = t
-
-    ### changing all tiles
-    def change_all(self, color):
-        for r in range(0, COLS, 1):
-
-            for c in range(0, ROWS, 1):
-                self.current[r, c].color = color
-
-            if (c * ROWS) == W:
-                c = 0
-                r += 1
-
-    def shuffle_all(self):
-        for r in range(0, COLS, 1):
-            for c in range(0, ROWS, 1):
-                self.current[r, c].color = shuffle_color()
-
-    ### change tile at y,x into color
-    def set_tile(self, y, x, color):
-        try:
-            t = self.current[y // TILE_SIZE, x // TILE_SIZE]
-            if t.color != color:
-                t.color = color
-                return t.draw()
-        ### does nothing if mouse out of range
-        except IndexError:
-            pass
-
-    ### the automation
-    def automate(self):
-
-        # next array becomes a copy of current
-        self.next = self.current.copy()
-
-        for y in range(COLS):
-
-            for x in range(ROWS):
-
-                t_focus = self.current[y, x]
-
-                t_cross = get_cross(self.current, y, x)
-
-                t_criss = get_criss(self.current, y, x)
-
-                ### what each color does
-
-                # white and black blinking
-                if t_focus.color == COLORS['WHITE']:
-                    self.next[y, x].color = COLORS['BLACK']
-
-                elif t_focus.color == COLORS['BLACK']:
-                    self.next[y, x].color = COLORS['WHITE']
-
-        # buffer swap
-        self.current, self.next = self.next, self.current
-
-    ### performs automation if scroll lock is toggled on
-    def scroll_lock_toggler(self):
-        if user32.GetKeyState(0x91):
-            self.automate()
-            self.generation += 1  # increments generation
-            GAME.set_caption(str(self.generation))
-
-
-# constructor
-Board = TileMap()
-
-# clock
-c = pyg.clock.get_default()  # grabs pyglets clock
-
-
-def update(dt):  # every FPS second, perform these things, dt is time since last frame
-    c.tick()  # every FPS, tick the clock
-
-    Board.scroll_lock_toggler()
-
-
-# events
-@GAME.event
-def on_draw():
-    GAME.clear()
-    TILE_BATCH.draw()
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-
-# mouse input
-@GAME.event
-def on_mouse_press(x, y, button, modifiers):
-    if button == pyg.window.mouse.LEFT:
-        Board.set_tile(x, y, COLORS['AQUA'])
-
-    if button == pyg.window.mouse.LEFT and modifiers & MOD_SHIFT:
-        Board.set_tile(x, y, COLORS['BLUE'])
-
-    if button == pyg.window.mouse.RIGHT:
-        Board.set_tile(x, y, COLORS['PERU'])
-
-    if button == pyg.window.mouse.RIGHT and modifiers & MOD_SHIFT:
-        Board.set_tile(x, y, COLORS['WHITE'])
-
-
-@GAME.event
-def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
-    if buttons == pyg.window.mouse.LEFT:
-        Board.set_tile(x, y, COLORS['AQUA'])
-
-    if buttons == pyg.window.mouse.LEFT and modifiers & MOD_SHIFT:
-        Board.set_tile(x, y, COLORS['BLUE'])
-
-    if buttons == pyg.window.mouse.RIGHT:
-        Board.set_tile(x, y, COLORS['PERU'])
-
-    if buttons == pyg.window.mouse.RIGHT and modifiers & MOD_SHIFT:
-        Board.set_tile(x, y, COLORS['WHITE'])
-
-
-# key input
-@GAME.event
-def on_key_press(symbol, modifiers):
-    if symbol == key.T:
-        ### Test ###
-        print("123")
-        pass
-
-    if symbol == key.H:
-        print(HELP_TEXT)
-
-    if symbol == key.R:
-        Board.shuffle_all()
-
-    if symbol == key.C:
-        Board.change_all(COLORS['WHITE'])
-
-    # shift plus X to exit
-    if symbol == key.X and modifiers & MOD_SHIFT:
-        pyg.app.exit()
-
-
-# print help
-print(HELP_TEXT)
-
-# loop and refresh rate
+# config window loop
 if __name__ == "__main__":
-    c.schedule_interval(update, FPS)
-    pyg.app.run()
+    slider_values = config_window.main()
+    print(f"Slider values: {slider_values}")
+# passes on slider values 1-4
+rows_value = slider_values[0]
+cols_value = slider_values[1]
+scale_factor = slider_values[2]
+update_speed = slider_values[3]
+# derived values
+window_width = cols_value * scale_factor
+window_height = rows_value * scale_factor
+# generation & tile batch creation
+generation_counter = 0
+batch = pyglet.graphics.Batch()
+
+
+# grid constructor
+def create_empty_grid(rows, columns):
+    return np.empty((rows, columns), dtype = object)
+
+
+# scroll lock check
+def scroll_lock_is_active():
+    return ctypes.windll.user32.GetKeyState(0x91) & 0x0001 != 0
+
+
+# construct grid based on previous sliders
+grid = create_empty_grid(rows_value, cols_value)
+
+# construct a window based on sliders and scaling
+window = pyglet.window.Window(
+    window_width, window_height, caption = f'{generation_counter}')
+
+# Populate the grid with rectangles and labels, put in batch
+for i in range(rows_value):
+    for j in range(cols_value):
+        x = j * scale_factor
+        y = window_height - (i + 1) * scale_factor  # Adjust y to start from the top
+        grid[i, j] = {
+            'rectangle': shapes.Rectangle(x, y, scale_factor, scale_factor, color = COLORS['BLUE'], batch = batch),
+            'label': Label(f'({i},{j})', x = x + scale_factor // 2, y = y + scale_factor // 2,
+                           anchor_x = 'center', anchor_y = 'center', batch = batch)
+        }
+
+
+# draw the batch
+@window.event
+def on_draw():
+    window.clear()
+    batch.draw()
+
+
+# change a tile next frame depending on which color it is
+def automate():
+    global grid
+    # copy current grid
+    next_grid = grid.copy()
+
+    for x in range(cols_value):
+        for y in range(rows_value):
+            # access tile at (y, x)
+            t_focus = grid[y, x]
+            current_color = t_focus['rectangle'].color
+
+            # what each color does
+            if current_color == COLORS['WHITE']:
+                t_focus['rectangle'].color = COLORS['BLACK']
+
+            elif current_color == COLORS['BLACK']:
+                t_focus['rectangle'].color = COLORS['WHITE']
+
+    # update the grid with the next state
+    grid = next_grid
+
+
+# randomize random tile color
+def randomize_tile():
+    row = random.randint(0, rows_value - 1)
+    col = random.randint(0, cols_value - 1)
+    new_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    grid[row, col]['rectangle'].color = new_color
+
+
+# events each frame
+def update(dt):
+    global generation_counter
+    if scroll_lock_is_active():
+        # automates tiles only when scroll lock is active
+        automate()
+        generation_counter += 1
+        window.set_caption(f'{generation_counter}')
+
+
+# mouse behavior
+@window.event
+def on_mouse_press(x, y, button, modifiers):
+    if button == pyglet.window.mouse.LEFT:
+        col = int(x // scale_factor)
+        row = int((window_height - y) // scale_factor)  # Adjust y to start from the top
+        if 0 <= row < rows_value and 0 <= col < cols_value:
+            grid[row, col]['rectangle'].color = COLORS['WHITE']
+
+
+@window.event
+def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+    if buttons == pyglet.window.mouse.LEFT:
+        col = int(x // scale_factor)
+        row = int((window_height - y) // scale_factor)  # Adjust y to start from the top
+        if 0 <= row < rows_value and 0 <= col < cols_value:
+            grid[row, col]['rectangle'].color = COLORS['WHITE']
+
+
+# hotkeys
+@window.event
+def on_key_press(symbol, modifiers):
+    if symbol == key.H:
+        row, col = random.randint(0, rows_value), random.randint(0, cols_value)
+        if 0 <= row < rows_value and 0 <= col < cols_value:
+            randomize_tile()
+
+
+# main loop
+if __name__ == "__main__":
+    pyglet.clock.schedule_interval(update, update_speed)
+    pyglet.app.run()

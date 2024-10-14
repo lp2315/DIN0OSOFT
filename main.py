@@ -30,7 +30,7 @@ TILE_BATCH = pyg.graphics.Batch()
 
 # general functions
 def shuffle_color():
-    return list(COLORS.values())[random.randrange(0, len(COLORS), 1)]
+    return list(COLORS.slider_values())[random.randrange(0, len(COLORS), 1)]
 
 
 # tilemap class and methods

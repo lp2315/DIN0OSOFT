@@ -1,34 +1,3 @@
-# settings
-
-COLS = 10
-ROWS = 10
-TILE_SIZE = 20
-GENERATION = 0
-
-# refresh rate
-
-FPS = 1  # seconds
-
-# derived constants
-
-W = int(COLS * TILE_SIZE)
-H = int(ROWS * TILE_SIZE)
-
-
-# functions for returning patterns
-
-# + pattern
-def get_cross(board, y, x):
-    return [board[(y + dy) % ROWS, x] for dy in [1, -1]] + [board[y, (x + dx) % COLS] for dx in [-1, 1]]
-
-
-# x pattern
-def get_criss(board, y, x):
-    return [board[(y + dy) % ROWS, (x + dx) % COLS] for dy, dx in [(1, 1), (1, -1), (-1, -1), (-1, 1)]]
-
-
-# rgb colors (found online)
-
 COLORS = {'RED': (255, 0, 0, 255), 'GREEN': (0, 255, 0, 255), 'BLUE': (0, 0, 255, 255), 'BLACK': (0, 0, 0, 255),
           'DARK_GREY': (60, 60, 60, 255), 'DARK_SLATE_GREY': (47, 79, 79, 255), 'DIM_GREY': (105, 105, 105, 255),
           'FREE_SPEECH_GREY': (99, 86, 136, 255), 'GREY': (190, 190, 190, 255), 'GREY0': (0, 0, 0, 255),
@@ -243,20 +212,3 @@ COLORS = {'RED': (255, 0, 0, 255), 'GREEN': (0, 255, 0, 255), 'BLUE': (0, 0, 255
           'SNOW_3': (205, 201, 201, 255), 'SNOW_4': (139, 137, 137, 255), 'WHEAT': (245, 222, 179, 255),
           'WHEAT_1': (255, 231, 186, 255), 'WHEAT_2': (238, 216, 174, 255), 'WHEAT_3': (205, 186, 150, 255),
           'WHEAT_4': (139, 126, 102, 255), 'QUARTZ': (217, 217, 243, 255)}
-
-# help text
-
-HELP_TEXT = (
-    """ 
-    Formica. 2023/2024. din0o.
-    
-    R = randomize board
-    C = clear board
-    
-    H = print help
-    T = testing
-    
-    Scroll Lock On/Off = toggle board automation
-    Shift + X = exit
-    """
-)
