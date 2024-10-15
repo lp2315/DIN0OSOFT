@@ -1,87 +1,47 @@
-import tkinter as tk
-from tkinter import *
 import keyboard
-import datetime as dt
-
-
-# ask strings
-
-help_message = "HELP TEXT"
-info_message = "WELCOME TO FOSSIL CONSOLE"
-error_message = "NO SUCH COMMAND..."
-
+from functions import *
 
 # root
 
 root = tk.Tk()
-root.title("FOSSIL Terminal")
-root.geometry("700x250+15+15")
-root.resizable(False, False)
+
+# get user screen and scale window
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+window_width = screen_width // 5
+window_height = screen_height // 4
+position_x = int((screen_width / 2) - (window_width / 2))
+position_y = int((screen_height / 2) - (window_height / 2))
+root.geometry(f"{window_width}x{window_height}+{position_x}+{position_y}")
+# customization
+root.resizable(0, 0)
 root.iconbitmap("foss_1.ico")
+root.configure(bg = "gray")
+root.title("FOSSIL Terminal")
 
+# input bar
 
-# top label
-
-logo = tk.PhotoImage(file = "foss_small.png")
-tk.Label(root, image = logo, text = 'FOSSIL', font = ("Terminal", 14), compound = 'top').pack()
-
-
-# text widget plus colors of input text
-
-console = (tk.Text(root, height = 10, bg = "black", fg = "white"))
-console.pack(padx = 1, pady = 1)
-
-console.tag_config("ask", foreground = "green")
-console.tag_config("system", foreground = "yellow")
-
-
-# entry widget
-
-lastcommand = StringVar()
-input_bar = tk.Entry(root, font = ("Courier New Italic", 12), textvariable = lastcommand, width = 55)
-
-input_bar.pack(padx = 1, pady = 1, side = "left")
+lastcommand = tk.StringVar()
+input_bar = tk.Entry(root, bg = "gray", font = ("Courier New Italic", 12), textvariable = lastcommand)
 input_bar.focus()
+input_bar.pack(side = "bottom", fill = "both", expand = 1, padx = 4, pady = 4)
 
+# console
 
-# functions
-
-def send():
-    timestamp = dt.datetime.now()
-    msg = str(input_bar.get())
-    console.insert("-1.0", str(timestamp.strftime('%H:%M - ') + msg + "\n"))
-    input_bar.delete(0, END)
-
-
-def ask():
-    timestamp = dt.datetime.now()
-    msg = str(input_bar.get())
-    console.insert("-1.0", str(timestamp.strftime('%H:%M - ') + msg + "\n"), "ask")
-    if msg == "help":
-        console.insert("-1.0", "> " + help_message + "\n", "system")
-    elif msg == "info":
-        console.insert("-1.0", "> " + info_message + "\n", "system")
-    else:
-        console.insert("-1.0", "> " + error_message + "\n", "system")
-    input_bar.delete(0, END)
-
-
-# buttons
-
-tk.Button(root, bg = "blue", fg = "white", text = "!", font = ("Courier New", 12), command = send).pack(
-    padx = 1, pady = 1, side = "right")
-tk.Button(root, bg = "green", fg = "white", text = "?", font = ("Courier New", 12), command = ask).pack(
-    padx = 1, pady = 1, side = "right")
+console = (tk.Text(root, bg = "black", fg = "white", state = "disabled"))
+console.config(font = ("Courier New", 10))
+console.pack(side = "top", fill = "both", expand = 1, padx = 4, pady = 4)
 
 
 # hotkeys
 
-keyboard.add_hotkey('shift+enter', ask)
-keyboard.add_hotkey('enter', send)
+def ask_hotkey():
+    ask(console, input_bar)
 
-console.insert("-1.0", "> " + info_message + "\n", "system")
 
-#
+keyboard.add_hotkey("enter", ask_hotkey)
+
+# loop
 
 if __name__ == "__main__":
     root.mainloop()
