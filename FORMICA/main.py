@@ -75,7 +75,9 @@ def automate():
         COLORS['GREEN_1']: lambda y, x: handle_green_1(y, x, grid, next_grid, COLORS),
         COLORS['GREEN_2']: lambda y, x: handle_green_2(y, x, grid, next_grid, COLORS),
         COLORS['GREEN_3']: lambda y, x: handle_green_3(y, x, grid, next_grid, COLORS),
-        COLORS['DARK_BROWN']: lambda y, x: handle_dbrown(y, x, grid, next_grid, COLORS)
+        COLORS['DARK_BROWN']: lambda y, x: handle_dbrown(y, x, grid, next_grid, COLORS),
+
+
     }
     for x in range(cols_value):
         for y in range(rows_value - 1, -1, -1):
